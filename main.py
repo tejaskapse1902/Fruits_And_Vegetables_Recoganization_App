@@ -5,7 +5,6 @@ from PIL import Image
 import json
 import os
 
-# --- Load model and labels once ---
 @st.cache_resource
 def load_model_and_labels(model_path="trained_model.h5", labels_path="labels.json"):
     model = tf.keras.models.load_model(model_path)
@@ -16,7 +15,7 @@ def load_model_and_labels(model_path="trained_model.h5", labels_path="labels.jso
 
 model, labels, labels_dict = load_model_and_labels()
 
-# --- Load example images ---
+
 EXAMPLES_DIR = "example_images"
 example_images = {}
 for label in labels:
@@ -24,7 +23,7 @@ for label in labels:
     if os.path.exists(img_path):
         example_images[label] = Image.open(img_path)
 
-# --- Preprocess function ---
+
 def preprocess_image(file_obj, target_size=(64, 64)):
     img = Image.open(file_obj).convert("RGB")
     w, h = img.size
@@ -37,7 +36,7 @@ def preprocess_image(file_obj, target_size=(64, 64)):
     arr = np.expand_dims(arr, axis=0)
     return arr
 
-# --- Prediction functions ---
+
 def predict_image(uploaded_file, threshold=0.1, top_k=3):
     input_arr = preprocess_image(uploaded_file)
     preds = model.predict(input_arr)
@@ -56,11 +55,11 @@ def scale_topk_probs(top_k):
         return top_k
     return [(label, prob / max_prob * 100) for label, prob in top_k]
 
-# --- Streamlit UI ---
+
 st.title("Fruits and Vegetables Recognition App")
 st.image("home_img.jpg", use_column_width=True)
 
-# --- Switch between upload and camera ---
+
 input_method = st.radio("Choose Input Method:", ("Upload Image", "Live Camera Capture"))
 
 if input_method == "Upload Image":
@@ -74,13 +73,13 @@ if image_file is not None:
     if st.button("Predict"):
         st.write("Predicting...")
         
-        # --- Prediction ---
+       
         result = predict_image(image_file, top_k=3)
         scaled_topk = scale_topk_probs(result["top_k"])
         top_label, top_prob = scaled_topk[0]
         info = labels_dict.get(top_label, "No health info available.")
 
-        # --- Top-1 Prediction Card ---
+      
         st.markdown("## Top Prediction")
         st.markdown(f"""
         <div style='border:2px solid rgb(28, 131, 225); padding:15px; border-radius:10px; background-color:rgb(255 255 255 / 0%)'>
@@ -89,7 +88,7 @@ if image_file is not None:
         </div>
         """, unsafe_allow_html=True)
 
-        # --- Top-3 Predictions with Example Images ---
+        
         st.markdown("## Top Predictions with Example Images")
         for label, prob in scaled_topk:
             cols = st.columns([1, 3])
